@@ -1,0 +1,69 @@
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[project]
+name = "characterize"
+version = "0.1.0"
+requires-python = ">=3.11"
+authors = [
+  {name = "Nathaniel Charlebois", email = "22298248+NVRC@users.noreply.github.com"},
+]
+maintainers = []
+description = "Assess data across common dimensions."
+readme = "README.md"
+license = "GNUv3"
+license-files = ["LICEN[CS]E"]
+keywords = ["data"]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Programming Language :: Python"
+]
+dependencies = [
+  "pandas>=3.0",
+  "plotly>=6.0.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/NVRC/characterize"
+Documentation = "https://github.com/NVRC/characterize"
+Repository = "https://github.com/NVRC/characterize.git"
+"Bug Tracker" = "https://github.com/NVRC/characterize/issues"
+
+[project.scripts]
+characterize = "characterize.__main__:main"
+
+
+[tool.poetry]
+packages = [
+    { include = "characterize", from = "src" }
+]
+
+[tool.poetry.group.dev.dependencies]
+pytest = ">=8.0"
+pre-commit = "^4.5"
+black = "*"
+isort = "*"
+flake8 = "*"
+mypy = "*"
+
+
+[tool.black]
+line-length = 120
+
+[tool.isort]
+profile = "black"
+line_length = 120
+multi_line_output = 3
+include_trailing_comma = true
+lines_after_imports = 2
+force_alphabetical_sort_within_sections = true
+
+[tool.flake8]
+max-line-length = 120
+extend-ignore = ["E203", "W503"]
+
+[tool.mypy]
+ignore_missing_imports = true
+disallow_untyped_defs = true
+pretty = true
