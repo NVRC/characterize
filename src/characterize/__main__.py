@@ -2,54 +2,13 @@ import argparse
 import logging
 import mimetypes
 import sys
-from enum import StrEnum
-from typing import Callable, Dict, NamedTuple
+from pathlib import Path
 
-import pandas as pd
-
-
-CLI_DATA_URL = "url"
+from characterize.descriptor import describe
+from characterize.mime import MIMECategorizer
 
 
-class DatasetCategory(StrEnum):
-    TIMESERIES = "TIMESERIES"
-    SEMI_STRUCTURED = "SEMI_STRUCTURED"
-
-
-DatasetPointer = NamedTuple(
-    "DatasetPointer", [("category", DatasetCategory), ("parser", Callable[[str], pd.DataFrame])]
-)
-
-
-class MIMECategorizer:
-    """Translate MIME to a dataset category.
-    Supported MIME registries are a subset of:
-        - text/
-        - application/
-    """
-
-    SUPPORTED_REGISTRIES = ("text", "application")
-
-    MIME_DATASET_CATEGORY: Dict[str, DatasetPointer] = {
-        "application/vnd.apache.parquet": DatasetPointer(DatasetCategory.TIMESERIES, pd.read_parquet),
-        "text/csv": DatasetPointer(DatasetCategory.TIMESERIES, pd.read_csv),
-        "application/json": DatasetPointer(DatasetCategory.SEMI_STRUCTURED, pd.read_json),
-    }
-
-    @staticmethod
-    def categorize(mime: str) -> DatasetPointer:
-        # Apply str regex to roughly map MIME types to common fmts
-        # with the end goal of parsing the data.
-        # e.g. `text/csv` implies Tabular data and other assumptions/views
-        #       may then be futher applied.
-        if not mime.startswith(MIMECategorizer.SUPPORTED_REGISTRIES):
-            raise NotImplementedError(
-                "Must be of format {}. Cannot categorize mime {}.".format(MIMECategorizer.SUPPORTED_REGISTRIES, mime)
-            )
-        dataset_type = MIMECategorizer.MIME_DATASET_CATEGORY.get(mime, None)
-        if dataset_type is None:
-            raise NotImplementedError("MIME {} not supported.".format(mime))
-        return dataset_type
+CLI_LOCAL_PATH = "path"
 
 
 def main(url: str) -> int:
@@ -66,11 +25,24 @@ def main(url: str) -> int:
 
         # Read Data
         df = dataset_type.parser(url)
+        # Coerce DataFrame dtypes
+        df = df.convert_dtypes(
+            infer_objects=True,
+            convert_string=True,
+            convert_integer=True,
+            convert_boolean=True,
+            convert_floating=True,
+            dtype_backend="numpy_nullable",
+        )
+
         descriptive_df = df.describe()
 
-        logging.info("Sample DataFrame: %s", df)
-        logging.info("Descriptive DataFrame: %s", descriptive_df)
-        # Extract semantic metadata from columns
+        logging.debug("Sample DataFrame: \n%s", df)
+        logging.debug("DataFrame Dtypes: \n%s", df.dtypes)
+        logging.debug("Descriptive DataFrame: \n%s", descriptive_df)
+        # Extract semantic metadata from column names
+        data_descriptor = describe(Path(url), column_names=list(df.columns))
+        logging.info("Data descriptor: %s", data_descriptor)
 
         # Feature extraction and view assessment
 
@@ -82,18 +54,18 @@ def main(url: str) -> int:
 
 if __name__ == "__main__":
     logging.basicConfig(
-        level=logging.INFO,
+        level=logging.DEBUG,
         format="%(asctime)s - %(levelname)s - %(name)s - %(funcName)s:%(lineno)d - %(message)s",
     )
     mimetypes.init()
     parser = argparse.ArgumentParser("Characterize a dataset.")
     parser.add_argument(
-        "-i",
-        f"--{CLI_DATA_URL}",
-        help="URL to a homogenous set of data.",
-        dest=CLI_DATA_URL,
+        "-p",
+        f"--{CLI_LOCAL_PATH}",
+        help="Local path to a homogenous set of data.",
+        dest=CLI_LOCAL_PATH,
         type=str,
         required=True,
     )
     args = parser.parse_args()
-    sys.exit(main(args.url))
+    sys.exit(main(args.path))
