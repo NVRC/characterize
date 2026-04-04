@@ -11,6 +11,8 @@ from characterize import ureg
 
 
 SEMANTIC_UNIT_REGEX = re.compile(r"(.*?)[\s-]+\(+(.*?)\)")
+UNIT_REGEX = re.compile(r"\(+(.*?)\)")
+WORDS_REGEX = "[^a-zA-Z0-9]"
 
 
 @dataclass
@@ -26,7 +28,7 @@ class ColumnarDescriptor:
     columns: Dict[str, Kind]
 
 
-def quantify(label: str) -> Kind:
+def kindify(label: str) -> Kind:
     """Parse common label notations to infer a reduced Quantity set.
 
     Parameters
@@ -41,23 +43,51 @@ def quantify(label: str) -> Kind:
 
     Examples
     --------
-        >>> quantify("T (degC)")
-        <Unit('degree_Celsius')>
+        >>> kindify("Temp (degC)")
+        Kind(unit=<Unit("degree_Celsius")>, semantic="Temp")
+        >>> kindify("Temp of foobar degC")
+        Kind(unit=<Unit("degree_Celsius")>, semantic="Temp of foobar")
+        >>> kindify("degC")
+        Kind(unit=<Unit("degree_Celsius")>, semantic=None)
 
     """
-    label_unit_match = SEMANTIC_UNIT_REGEX.match(label)
+    # NOTE: semantic label could optionally be matched
+    semantic_unit_match = SEMANTIC_UNIT_REGEX.match(label)
     # Clean REGEX matches, otherwise greedily parse
-    if label_unit_match is not None:
-        semantic_label, unit_label = label_unit_match.groups()
+    if semantic_unit_match is not None:
+        semantic_label, unit_label = semantic_unit_match.groups()
         unit = ureg.parse_units(unit_label)
         return Kind(
             unit=unit,
             semantic=semantic_label,
         )
 
-    raise NotImplementedError("BASE ERROR")
+    unit_match = UNIT_REGEX.match(label)
+    if unit_match is not None:
+        # Remove and parse as unit
+        unit_label = unit_match.group()
+        unit = ureg.parse_units(unit_label)
+        return Kind(
+            unit=unit,
+            semantic=None,
+        )
+
+    # Assuming two or more words
+    splits = re.split(WORDS_REGEX, label)
+    number_of_components = len(splits)
+    default_semantic_label: Optional[str] = None
+    if number_of_components >= 1:
+        unit = ureg.parse_units(splits[-1])
+        if number_of_components > 1:
+            default_semantic_label = "_".join(splits[:-1])
+        return Kind(
+            unit=unit,
+            semantic=default_semantic_label,
+        )
+
+    raise ValueError("Unable to quantify label {}".format(label))
 
 
 def describe(path: Path, column_names: Sequence[str]) -> ColumnarDescriptor:
     name = path.stem
-    return ColumnarDescriptor(name=name, path=path, columns={col_name: quantify(col_name) for col_name in column_names})
+    return ColumnarDescriptor(name=name, path=path, columns={col_name: kindify(col_name) for col_name in column_names})

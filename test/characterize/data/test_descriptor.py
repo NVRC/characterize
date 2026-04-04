@@ -19,10 +19,16 @@ def test_describe(tmp_path: Path) -> None:
     argvalues=[
         ("T (degC)", descriptor.Kind(U_("degree_Celsius"), "T")),
         ("Temp (degC)", descriptor.Kind(U_("degree_Celsius"), "Temp")),
+        ("(degC)", descriptor.Kind(U_("degree_Celsius"), None)),
+        ("degC", descriptor.Kind(U_("degree_Celsius"), None)),
+        ("Temp degC", descriptor.Kind(U_("degree_Celsius"), "Temp")),
+        ("Temp foobar fizz degC", descriptor.Kind(U_("degree_Celsius"), "Temp_foobar_fizz")),
+        ("Temp-foobar-fizz degC", descriptor.Kind(U_("degree_Celsius"), "Temp_foobar_fizz")),
+        ("Temp.foobar.fizz degC", descriptor.Kind(U_("degree_Celsius"), "Temp_foobar_fizz")),
     ],
 )
 def test_quantify_quantity_parsing(substring: str, expected: descriptor.Kind) -> None:
-    t_kind = descriptor.quantify(substring)
+    t_kind = descriptor.kindify(substring)
     assert t_kind == expected
 
 
