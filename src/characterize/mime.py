@@ -1,6 +1,7 @@
 """Categorize a MIME type to a Dataset descriptor."""
 
 from enum import StrEnum
+from pathlib import Path
 from typing import Callable, Dict, NamedTuple
 
 import pandas as pd
@@ -12,7 +13,7 @@ class DatasetCategory(StrEnum):
 
 
 DatasetPointer = NamedTuple(
-    "DatasetPointer", [("category", DatasetCategory), ("parser", Callable[[str], pd.DataFrame])]
+    "DatasetPointer", [("category", DatasetCategory), ("parser", Callable[[Path], pd.DataFrame])]
 )
 
 
