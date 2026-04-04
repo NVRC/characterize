@@ -22,6 +22,7 @@ classifiers = [
 dependencies = [
   "pandas>=3.0",
   "plotly>=6.0.0",
+  "pint>=0.25.3"
 ]
 
 [project.urls]
