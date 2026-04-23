@@ -11,7 +11,9 @@ def test_describe(tmp_path: Path) -> None:
     data_descriptor = descriptor.describe(tmp_name, column_names=["test (degC)"])
     assert data_descriptor
     assert data_descriptor.name == __name__
-    assert data_descriptor.columns == {"test (degC)": descriptor.Kind(U_("degree_Celsius"), "test")}
+    assert data_descriptor.columns == {
+        "test (degC)": descriptor.Kind(U_("degree_Celsius"), "test")
+    }
 
 
 @pytest.mark.parametrize(
@@ -22,9 +24,22 @@ def test_describe(tmp_path: Path) -> None:
         ("(degC)", descriptor.Kind(U_("degree_Celsius"), None)),
         ("degC", descriptor.Kind(U_("degree_Celsius"), None)),
         ("Temp degC", descriptor.Kind(U_("degree_Celsius"), "Temp")),
-        ("Temp foobar fizz degC", descriptor.Kind(U_("degree_Celsius"), "Temp_foobar_fizz")),
-        ("Temp-foobar-fizz degC", descriptor.Kind(U_("degree_Celsius"), "Temp_foobar_fizz")),
-        ("Temp.foobar.fizz degC", descriptor.Kind(U_("degree_Celsius"), "Temp_foobar_fizz")),
+        (
+            "Temp foobar fizz degF",
+            descriptor.Kind(U_("degree_Fahrenheit"), "Temp_foobar_fizz"),
+        ),
+        (
+            "Temp-foobar-fizz degF",
+            descriptor.Kind(U_("degree_Fahrenheit"), "Temp_foobar_fizz"),
+        ),
+        (
+            "Temp.foobar.fizz degF",
+            descriptor.Kind(U_("degree_Fahrenheit"), "Temp_foobar_fizz"),
+        ),
+        (
+            "Temp/foobar/fizz degF",
+            descriptor.Kind(U_("degree_Fahrenheit"), "Temp_foobar_fizz"),
+        ),
     ],
 )
 def test_quantify_quantity_parsing(substring: str, expected: descriptor.Kind) -> None:
@@ -47,7 +62,9 @@ def test_quantify_regex(substring: str, semantic_label: str, unit_label: str) ->
     assert t_unit_label == unit_label
 
 
-@pytest.mark.parametrize(argnames=("substring"), argvalues=[("T degC"), ("Temp degC"), ("(degC)"), ("Temp")])
+@pytest.mark.parametrize(
+    argnames=("substring"), argvalues=[("T degC"), ("Temp degC"), ("(degC)"), ("Temp")]
+)
 def test_quantify_regex_not_matching(substring: str) -> None:
     matcher = descriptor.SEMANTIC_UNIT_REGEX.match(substring)
     assert matcher is None
