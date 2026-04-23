@@ -29,7 +29,7 @@ class ColumnarDescriptor:
 
 
 def kindify(label: str) -> Kind:
-    """Parse common label notations to infer a reduced Quantity set.
+    """Parse common label notations to infer a Pint.UnitT based on a column name.
 
     Parameters
     ----------
@@ -39,6 +39,7 @@ def kindify(label: str) -> Kind:
                 Temp (degC),
                 (degC),
                 Temp degC,
+                Temp of foobar degC,
                 degC
 
     Examples
@@ -85,9 +86,15 @@ def kindify(label: str) -> Kind:
             semantic=default_semantic_label,
         )
 
-    raise ValueError("Unable to quantify label {}".format(label))
+    raise ValueError(
+        "Unable to quantify label {}. Consider revising column name.".format(label)
+    )
 
 
 def describe(path: Path, column_names: Sequence[str]) -> ColumnarDescriptor:
     name = path.stem
-    return ColumnarDescriptor(name=name, path=path, columns={col_name: kindify(col_name) for col_name in column_names})
+    return ColumnarDescriptor(
+        name=name,
+        path=path,
+        columns={col_name: kindify(col_name) for col_name in column_names},
+    )

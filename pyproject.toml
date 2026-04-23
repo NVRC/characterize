@@ -50,18 +50,18 @@ mypy = "*"
 
 
 [tool.black]
-line-length = 120
+line-length = 88
 
 [tool.isort]
 profile = "black"
-line_length = 120
+line_length = 88
 multi_line_output = 3
 include_trailing_comma = true
 lines_after_imports = 2
 force_alphabetical_sort_within_sections = true
 
 [tool.flake8]
-max-line-length = 120
+max-line-length = 88
 extend-ignore = ["E203", "W503"]
 
 [tool.mypy]
