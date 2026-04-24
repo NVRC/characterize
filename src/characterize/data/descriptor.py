@@ -40,7 +40,7 @@ def kindify(label: str) -> Kind:
                 (degC),
                 Temp degC,
                 Temp of foobar degC,
-                degC
+                degC,
 
     Examples
     --------
