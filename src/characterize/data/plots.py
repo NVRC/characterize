@@ -16,7 +16,10 @@ def render(data_descriptor: ColumnarDescriptor, df: pd.DataFrame) -> None:
             )
         )
 
-    fig = go.Figure(data=traces)
+    fig = go.Figure(
+        data=traces,
+        layout={"title": data_descriptor.name.capitalize(), "template": "seaborn"},
+    )
     fig.show()
 
     return

@@ -82,7 +82,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "-i",
         f"--{CLI_PRIMARY_INDEX}",
-        help="Primary dataset index, UTC epoch recommended.",
+        help="Primary dataset index, UTC timestamp recommended.",
         dest=CLI_PRIMARY_INDEX,
         type=str,
         required=False,
