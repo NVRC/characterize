@@ -3,18 +3,26 @@ import logging
 import mimetypes
 import sys
 from pathlib import Path
+from typing import Optional
 
 from characterize.data import descriptor
+from characterize.data.plots import render
 from characterize.mime import MIMECategorizer
 
 
 CLI_LOCAL_PATH = "path"
+CLI_PRIMARY_INDEX = "index"
+
+LOG_FMT = (
+    "%(asctime)s - %(levelname)s - %(name)s - %(funcName)s:%(lineno)d - %(message)s"
+)
 
 
-def main(path: Path) -> int:
+def main(path: Path, index_col: Optional[str]) -> int:
     try:
         # Parse extension
-        # The canonical MIME list is https://www.iana.org/assignments/media-types/media-types.xhtml
+        # The canonical MIME formats:
+        #   https://www.iana.org/assignments/media-types/media-types.xhtml
         mime_type, _ = mimetypes.guess_type(path, strict=False)
         logging.info("Parsed mime %s from dataset path %s", mime_type, path)
         if mime_type is None:
@@ -34,6 +42,8 @@ def main(path: Path) -> int:
             convert_floating=True,
             dtype_backend="numpy_nullable",
         )
+        if index_col:
+            df = df.set_index(keys=index_col, drop=True)
 
         descriptive_df = df.describe()
 
@@ -45,6 +55,8 @@ def main(path: Path) -> int:
         logging.info("Data descriptor: %s", data_descriptor)
 
         # Feature extraction and view assessment
+        # Derive a shared index
+        render(data_descriptor, df)
 
     except Exception as ex:
         logging.critical(str(ex))
@@ -55,7 +67,7 @@ def main(path: Path) -> int:
 if __name__ == "__main__":
     logging.basicConfig(
         level=logging.DEBUG,
-        format="%(asctime)s - %(levelname)s - %(name)s - %(funcName)s:%(lineno)d - %(message)s",
+        format=LOG_FMT,
     )
     mimetypes.init()
     parser = argparse.ArgumentParser("Characterize a dataset.")
@@ -67,5 +79,13 @@ if __name__ == "__main__":
         type=str,
         required=True,
     )
+    parser.add_argument(
+        "-i",
+        f"--{CLI_PRIMARY_INDEX}",
+        help="Primary dataset index, UTC epoch recommended.",
+        dest=CLI_PRIMARY_INDEX,
+        type=str,
+        required=False,
+    )
     args = parser.parse_args()
-    sys.exit(main(Path(args.path)))
+    sys.exit(main(Path(args.path), args.index))
