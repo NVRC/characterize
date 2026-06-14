@@ -8,6 +8,14 @@ Assess data across common dimensions.
 $ characterize --help
 ```
 
+### Example
+```bash
+$ wget "https://huggingface.co/api/resolve-cache/datasets/AutonLab/Timeseries-PILE/ea89753da2b451928436adb333c7a2e892461c7d/forecasting%2Fautoformer%2Fweather.csv?download=true" -O /tmp/autonlab_timeseries_pile_weather.csv
+$ characterize --path /tmp/autonlab_timeseries_pile_weather.csv
+```
+#### Primary plot
+![Weather primary dataset example](./docs/img/example_weather.png)
+
 
 ## Data Model
 ```mermaid
