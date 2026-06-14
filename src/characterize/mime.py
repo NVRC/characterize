@@ -13,7 +13,8 @@ class DatasetCategory(StrEnum):
 
 
 DatasetPointer = NamedTuple(
-    "DatasetPointer", [("category", DatasetCategory), ("parser", Callable[[Path], pd.DataFrame])]
+    "DatasetPointer",
+    [("category", DatasetCategory), ("parser", Callable[[Path], pd.DataFrame])],
 )
 
 
@@ -27,10 +28,16 @@ class MIMECategorizer:
     SUPPORTED_REGISTRIES = ("text", "application")
 
     MIME_DATASET_CATEGORY: Dict[str, DatasetPointer] = {
-        "application/vnd.apache.parquet": DatasetPointer(DatasetCategory.TIMESERIES, pd.read_parquet),
+        "application/vnd.apache.parquet": DatasetPointer(
+            DatasetCategory.TIMESERIES, pd.read_parquet
+        ),
         "text/csv": DatasetPointer(DatasetCategory.TIMESERIES, pd.read_csv),
-        "application/json": DatasetPointer(DatasetCategory.SEMI_STRUCTURED, pd.read_json),
+        "application/json": DatasetPointer(
+            DatasetCategory.SEMI_STRUCTURED, pd.read_json
+        ),
     }
+
+    TIMESERIES_COLS = ("date", "datetime", "timestamp", "time")
 
     @staticmethod
     def categorize(mime: str) -> DatasetPointer:
@@ -40,7 +47,9 @@ class MIMECategorizer:
         #       may then be futher applied.
         if not mime.startswith(MIMECategorizer.SUPPORTED_REGISTRIES):
             raise NotImplementedError(
-                "Must be of format {}. Cannot categorize mime {}.".format(MIMECategorizer.SUPPORTED_REGISTRIES, mime)
+                "Must be of format {}. Cannot categorize mime {}.".format(
+                    MIMECategorizer.SUPPORTED_REGISTRIES, mime
+                )
             )
         dataset_type = MIMECategorizer.MIME_DATASET_CATEGORY.get(mime, None)
         if dataset_type is None:

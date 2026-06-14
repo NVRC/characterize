@@ -3,7 +3,7 @@ import logging
 import mimetypes
 import sys
 from pathlib import Path
-from typing import Optional
+from typing import List, Optional
 
 from characterize.data import descriptor
 from characterize.data.plots import render
@@ -44,6 +44,19 @@ def main(path: Path, index_col: Optional[str]) -> int:
         )
         if index_col:
             df = df.set_index(keys=index_col, drop=True)
+        else:
+            # Attempt to index DF by a timeseries column
+            timeseries_cols: List[str] = list(
+                set(df.columns) & set(MIMECategorizer.TIMESERIES_COLS)
+            )
+            if timeseries_cols:
+                if len(timeseries_cols) > 1:
+                    logging.info(
+                        "Found multiple timeseries columns usable as index. \
+                            Use CLI '--index' to select from: %s",
+                        timeseries_cols,
+                    )
+                df = df.set_index(keys=timeseries_cols[0], drop=True)
 
         descriptive_df = df.describe()
 
