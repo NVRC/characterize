@@ -39,7 +39,7 @@ class MIMECategorizer:
         ),
     }
 
-    TIMESERIES_COLS = ("date", "datetime", "timestamp", TIME_LABEL)
+    TIMESERIES_COLS = ("date", "datetime", "timestamp", "utc_timestamp", TIME_LABEL)
 
     @staticmethod
     def categorize(mime: str) -> DatasetPointer:
