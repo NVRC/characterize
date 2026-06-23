@@ -17,6 +17,8 @@ DatasetPointer = NamedTuple(
     [("category", DatasetCategory), ("parser", Callable[[Path], pd.DataFrame])],
 )
 
+TIME_LABEL = "time"
+
 
 class MIMECategorizer:
     """Translate MIME to a dataset category.
@@ -37,7 +39,7 @@ class MIMECategorizer:
         ),
     }
 
-    TIMESERIES_COLS = ("date", "datetime", "timestamp", "time")
+    TIMESERIES_COLS = ("date", "datetime", "timestamp", TIME_LABEL)
 
     @staticmethod
     def categorize(mime: str) -> DatasetPointer:

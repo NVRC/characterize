@@ -21,8 +21,8 @@ def test_describe(tmp_path: Path) -> None:
     argvalues=[
         ("T (degC)", descriptor.Kind(U_("degree_Celsius"), "T")),
         ("Temp (degC)", descriptor.Kind(U_("degree_Celsius"), "Temp")),
-        ("(degC)", descriptor.Kind(U_("degree_Celsius"), None)),
-        ("degC", descriptor.Kind(U_("degree_Celsius"), None)),
+        ("(degC)", descriptor.Kind(U_("degree_Celsius"), "degree_Celsius")),
+        ("degC", descriptor.Kind(U_("degree_Celsius"), "degree_Celsius")),
         ("Temp degC", descriptor.Kind(U_("degree_Celsius"), "Temp")),
         (
             "Temp foobar fizz degF",
@@ -40,6 +40,24 @@ def test_describe(tmp_path: Path) -> None:
             "Temp/foobar/fizz degF",
             descriptor.Kind(U_("degree_Fahrenheit"), "Temp_foobar_fizz"),
         ),
+        (
+            "Foobar_fizz_buzz_degC",
+            descriptor.Kind(U_("degree_Celsius"), "Foobar_fizz_buzz"),
+        ),
+        (
+            "tang_bang_zang degree_Celsius",
+            descriptor.Kind(U_("degree_Celsius"), "tang_bang_zang"),
+        ),
+        (
+            "hoot_holler_degree_Celsius",
+            descriptor.Kind(U_("degree_Celsius"), "hoot_holler"),
+        ),
+        ("degree_Celsius", descriptor.Kind(U_("degree_Celsius"), "degree_Celsius")),
+        (
+            "AT_load_actual_entsoe_transparency",
+            descriptor.Kind(None, "AT_load_actual_entsoe_transparency"),
+        ),
+        ("UNKNOWN", descriptor.Kind(None, "UNKNOWN")),
     ],
 )
 def test_quantify_quantity_parsing(substring: str, expected: descriptor.Kind) -> None:
